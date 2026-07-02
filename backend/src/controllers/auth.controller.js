@@ -73,19 +73,19 @@ export const loginUser = async (req, res, next) => {
         user.refreshToken = refreshToken;
         await user.save()
 
+         const isProduction = process.env.NODE_ENV === "production";
+
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
-            domain: process.env.DOMAIN || "localhost", // Set the domain to your frontend domain
+            secure: isProduction, 
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 10 * 60 * 1000 // 15 minute
         });
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,     // Prevents client-side scripts from reading the cookie (blocks XSS)
-            secure: process.env.NODE_ENV === "production",       // Ensures cookie is only sent over HTTPS (use true in production)
-            domain: process.env.DOMAIN || "localhost", 
-            sameSite: "none", // Protects against Cross-Site Request Forgery (CSRF) attacks
+            secure: isProduction, 
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 24 * 60 * 60 * 1000 // Cookie expiry time in milliseconds (e.g., 1 day)
         });
 
@@ -126,11 +126,11 @@ export const getMe = async (req, res, next) => {
 export const logoutUser = async (req, res, next) => {
     try {
         await userModel.findByIdAndUpdate(req.user.userId, { refreshToken: null })
+         const isProduction = process.env.NODE_ENV === "production";
         res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            domain: process.env.DOMAIN || "localhost", 
-            sameSite: "none",
+            secure: isProduction, 
+            sameSite: isProduction ? "none" : "lax",
         });
 
         return res.status(200).json({
@@ -155,6 +155,7 @@ export const refreshAccessToken = async (req, res, next) => {
         if (!user || user.refreshToken !== token) {
             return next(new AppError("Invalid refresh token", 401));
         }
+        const isProduction = process.env.NODE_ENV === "production";
 
         const newAccessToken = jwt.sign({
             userId: user._id,
@@ -163,9 +164,8 @@ export const refreshAccessToken = async (req, res, next) => {
 
         res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            domain: process.env.DOMAIN || "localhost", 
-            sameSite: "none",
+            secure: isProduction, 
+            sameSite: isProduction ? "none" : "lax",
             maxAge: 10 * 60 * 1000 // 15 minute
         });
 
