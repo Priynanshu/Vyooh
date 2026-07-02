@@ -69,7 +69,7 @@ export default function TitleDetails() {
               style={{background:"#00A8E1"}}
              >
               <Play size={18} fill="white"/>
-              {isYT ? "Watch on YouTube" : "Play"}
+              {isYT ? "Watch Now" : "Play"}
             </Link>
             <button className="w-10 h-10 flex items-center justify-center border border-white/30 rounded-full text-white hover:border-white bg-black/30 backdrop-blur-sm transition-colors">
               <Plus size={18}/>

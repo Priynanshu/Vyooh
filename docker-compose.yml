@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:8000" # Bahar se bhi 8000, andar se bhi 8000
+    volumes:
+      - ./backend:/app
+      - /app/node_modules # Node modules volume ka sahi format
+    env_file:
+      - ./backend/.env # Yeh aapke backend folder ki .env file se saari keys khud utha lega
+    environment:
+      - PORT=3000 # Taaki server port 8000 par hi start ho
+      - NODE_ENV=development
+    command: npm run dev
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173" # Vite default port (Browser me localhost:5173 khulega)
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:3000 # Frontend ab backend ke port 3000 par request bhejega
+    command: npm run dev
