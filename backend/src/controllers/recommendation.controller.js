@@ -10,13 +10,13 @@ export async function getRecommendations(req, res, next) {
     const userId = req.user.userId;
     const cacheKey = `recommendations:${userId}`;
 
-    // Pehle cache check karo
+    // Check cache first
     const cached = await redisConnection.get(cacheKey);
     if (cached) {
       return res.status(200).json({ data: JSON.parse(cached), cached: true });
     }
 
-    // User ki history fetch karo
+    // Fetch user's watch history
     const history = await watchHistoryModel
       .find({ user: userId })
       .populate("video", "title type genres")
@@ -25,10 +25,10 @@ export async function getRecommendations(req, res, next) {
       .lean();
 
     if (history.length === 0) {
-      return res.status(200).json({ data: [], message: "Watch kuch videos pehle, recommendations ke liye" });
+      return res.status(200).json({ data: [], message: "Please watch some videos first to get recommendations" });
     }
 
-    // Available videos fetch karo (jo already dekhi hain unhe exclude karo)
+    // Fetch available videos (exclude already watched ones)
     const watchedIds = history.filter(h => h.video).map(h => h.video?._id?.toString());
     const allVideos = await videoModel
       .find({ status: "ready", _id: { $nin: watchedIds } })
@@ -39,24 +39,24 @@ export async function getRecommendations(req, res, next) {
       return res.status(200).json({ data: [] });
     }
 
-    // AI se recommendations lo
+    // Get recommendations from AI
     const recommendations = await getAIRecommendations(history, allVideos);
 
-    // Recommended video IDs se poori details fetch karo
+    // Fetch details for recommended video IDs
     const videoIds = recommendations.map(r => r.videoId);
     const videos = await videoModel.find({ _id: { $in: videoIds } }).lean();
 
     const enriched = recommendations.map(rec => ({
       ...videos.find(v => v._id.toString() === rec.videoId),
       reason: rec.reason,
-    })).filter(v => v._id); // jo nahi mile unhe hata do
+    })).filter(v => v._id); // remove any that were not found
 
-    // Redis mein 30 min cache karo
+    // Cache in Redis for 30 minutes
     await redisConnection.set(cacheKey, JSON.stringify(enriched), "EX", 1800);
 
     return res.status(200).json({ data: enriched, cached: false });
   } catch (err) {
     console.error("Recommendation error:", err.message);
-    return next(new AppError("Recommendations generate nahi ho payi: " + err.message, 500));
+    return next(new AppError("Failed to generate recommendations: " + err.message, 500));
   }
 }

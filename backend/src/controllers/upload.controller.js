@@ -90,7 +90,7 @@ export async function markUploadComplete(req, res, next) {
       rawKey: video.rawKey,
     });
 
-    // Cache clear karo taaki next request fresh data le
+    // Clear cache so that the next request fetches fresh data
     await redisConnection.del("videos:all:page1:limit50");
 
     return res.status(200).json({ message: "Upload is complete, transcoding Goes into queue" });
@@ -105,17 +105,17 @@ export async function directUpload(req, res, next) {
     const { title, description, thumbnail, type, genres, year, rating } = req.body;
     const file = req.file;
 
-    if (!file) return next(new AppError("Video file nahi mili", 400));
+    if (!file) return next(new AppError("Video file not found", 400));
     if (!title || !description || !thumbnail) {
-      return next(new AppError("Title, description aur thumbnail zaroori hain", 400));
+      return next(new AppError("Title, description, and thumbnail are required", 400));
     }
 
     const key = `raw/${Date.now()}-${file.originalname.replace(/\s/g, "-")}`;
 
-    // Server se seedha B2 mein upload — CORS nahi hoga
+    // Upload directly from server to B2 — no CORS issues
     await uploadFile(key, file.buffer, file.mimetype || "video/mp4");
 
-    // DB mein entry banao
+    // Create DB entry
     const video = await videoModel.create({
       title,
       description,
@@ -128,7 +128,7 @@ export async function directUpload(req, res, next) {
       status: "pending",
     });
 
-    // Transcoding queue mein daalo
+    // Add to transcoding queue
     await transcodeQueue.add("transcode", {
       videoId: video._id.toString(),
       rawKey: key,
@@ -137,14 +137,14 @@ export async function directUpload(req, res, next) {
     video.status = "queued";
     await video.save();
 
-    // Cache clear karo taaki next request fresh data le
+    // Clear cache so that the next request fetches fresh data
     await redisConnection.del("videos:all:page1:limit50");
 
     return res.status(201).json({
-      message: "Upload successful, transcoding shuru ho gayi",
+      message: "Upload successful, transcoding has started",
       videoId: video._id,
     });
   } catch (err) {
-    return next(new AppError("Direct upload fail hua: " + err.message, 500));
+    return next(new AppError("Direct upload failed: " + err.message, 500));
   }
 }

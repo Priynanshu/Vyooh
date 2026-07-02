@@ -16,7 +16,7 @@ export default function AdminUpload() {
     <div className="pb-12 max-w-2xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white">Upload Content</h1>
-        <p className="text-prime-muted text-sm mt-1">Naya video ya YouTube link add karein</p>
+        <p className="text-prime-muted text-sm mt-1">Add a new video or YouTube link</p>
       </div>
 
       {/* Tabs */}
@@ -58,10 +58,10 @@ function UploadForm() {
   const toggleGenre = g => setForm(f=>({...f,genres:f.genres.includes(g)?f.genres.filter(x=>x!==g):[...f.genres,g]}));
 
   const validate = () => {
-    if (!form.title.trim())       return "Title zaroori hai";
-    if (!form.description.trim()) return "Description zaroori hai";
-    if (!form.thumbnail.trim())   return "Thumbnail URL zaroori hai";
-    if (!videoFile)               return "Video file select karein";
+    if (!form.title.trim())       return "Title is required";
+    if (!form.description.trim()) return "Description is required";
+    if (!form.thumbnail.trim())   return "Thumbnail URL is required";
+    if (!videoFile)               return "Please select a video file";
     return null;
   };
 
@@ -96,7 +96,7 @@ function UploadForm() {
     const { videoId: newId } = res.data;
     setVideoId(newId);
 
-    // Poll karo status ke liye
+    // Poll for status
     setStage(STAGE.TRANSCODING);
     pollRef.current = setInterval(async () => {
       try {
@@ -107,24 +107,24 @@ function UploadForm() {
         } else if (r.data.status === "failed") {
           clearInterval(pollRef.current);
           setStage(STAGE.FAILED);
-          setErrorMsg("Transcoding fail ho gayi. Dobara try karein.");
+          setErrorMsg("Transcoding failed. Please try again.");
         }
       } catch(_) {}
     }, 4000);
 
   } catch(err) {
     setStage(STAGE.FAILED);
-    setErrorMsg(err.response?.data?.message || err.message || "Upload fail hua");
+    setErrorMsg(err.response?.data?.message || err.message || "Upload failed");
   }
 };
 
   useEffect(()=>()=>clearInterval(pollRef.current), []);
 
   const stageLabel = {
-    [STAGE.REQUESTING]:  "Upload shuru kar rahe hain...",
+    [STAGE.REQUESTING]:  "Starting upload...",
     [STAGE.UPLOADING]:   `Uploading... ${progress}%`,
-    [STAGE.QUEUING]:     "Queue mein daal rahe hain...",
-    [STAGE.TRANSCODING]: "Transcoding chal rahi hai (background mein)...",
+    [STAGE.QUEUING]:     "Adding to queue...",
+    [STAGE.TRANSCODING]: "Transcoding is running (in background)...",
   }[stage] || "";
 
   const stagePct = {
@@ -229,7 +229,7 @@ function UploadForm() {
           </div>
           {stage===STAGE.TRANSCODING && (
             <p className="text-xs text-prime-muted mt-2">
-              File upload ho gayi — background mein process ho rahi hai. Dashboard mein status check kar sakte hain.
+              File uploaded successfully — processing in background. You can check the status in the dashboard.
             </p>
           )}
         </div>
@@ -238,7 +238,7 @@ function UploadForm() {
       {stage===STAGE.READY && (
         <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded px-3 py-2.5">
           <Check size={15} className="text-green-400"/>
-          <p className="text-green-400 text-sm">Video successfully publish ho gayi!</p>
+          <p className="text-green-400 text-sm">Video successfully published!</p>
         </div>
       )}
 
@@ -269,7 +269,7 @@ function YouTubeForm() {
 
   const handlePreview = () => {
     const id = extractId(url);
-    if (!id) { setError("Valid YouTube URL daalo"); return; }
+    if (!id) { setError("Please enter a valid YouTube URL"); return; }
     setError("");
     setPrev({ videoId:id, thumbnail:`https://img.youtube.com/vi/${id}/maxresdefault.jpg` });
   };
@@ -279,14 +279,14 @@ function YouTubeForm() {
   const handleSubmit = async e => {
     e.preventDefault();
     if (!preview || !form.title.trim() || !form.description.trim()) {
-      setError("Title aur description zaroori hain"); return;
+      setError("Title and description are required"); return;
     }
     setLoading(true); setError("");
     try {
       await api.post(API.UPLOAD_YOUTUBE, { url, ...form, year:Number(form.year) });
       setSuccess(true);
     } catch(err) {
-      setError(err.response?.data?.message || "YouTube video add nahi ho saki");
+      setError(err.response?.data?.message || "Could not add YouTube video");
     } finally { setLoading(false); }
   };
 
@@ -365,7 +365,7 @@ function YouTubeForm() {
           {success ? (
             <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded px-3 py-2.5">
               <Check size={15} className="text-green-400"/>
-              <p className="text-green-400 text-sm">YouTube video successfully add ho gaya!</p>
+              <p className="text-green-400 text-sm">YouTube video successfully added!</p>
             </div>
           ) : (
             <button type="submit" disabled={loading||!form.title}

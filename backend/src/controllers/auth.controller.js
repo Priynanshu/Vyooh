@@ -25,7 +25,7 @@ export const registerUser = async (req, res, next) => {
             role
         })
 
-        //agar frontend me user register karne ke bad tum user ko login par redirect kawate ho tb accesstoken or refreshtoken ya singlton token generate karewane ki koi jarurat nhi hai or agar sidha home per reirect karwana hai to tokens genrate karwane honge
+        // If the frontend redirects the user to login after registration, there is no need to generate access and refresh tokens. However, if redirecting straight to home, tokens must be generated.
 
         return res.status(201).json({
             message: "User Registerd Successfully",

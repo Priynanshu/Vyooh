@@ -2,7 +2,7 @@ import axios from "axios"
 
 export async function scrapeYouTube(url) {
   try {
-    // YouTube Video ID nikalo
+    // Extract YouTube Video ID
     const videoId = extractYouTubeId(url);
 
     if (!videoId) {
@@ -16,7 +16,7 @@ export async function scrapeYouTube(url) {
       };
     }
 
-    // YouTube oEmbed API use karo — free hai, key nahi chahiye
+    // Use YouTube oEmbed API — free, no key needed
     const oEmbedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
 
     const { data } = await axios.get(oEmbedUrl, { timeout: 8000 });
@@ -37,7 +37,7 @@ export async function scrapeYouTube(url) {
   } catch (error) {
     console.error("YouTube scrape error:", error.message);
 
-    // oEmbed fail ho — fallback
+    // If oEmbed fails — fallback
     const videoId = extractYouTubeId(url);
     return {
       url,
@@ -51,7 +51,7 @@ export async function scrapeYouTube(url) {
   }
 };
 
-// ── YouTube Video ID Extract ──────────────────────────
+// ── Extract YouTube Video ID ──────────────────────────
 const extractYouTubeId = (url) => {
   try {
     // youtube.com/watch?v=VIDEO_ID

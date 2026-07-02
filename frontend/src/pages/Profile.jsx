@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LogOut, User, Mail, Shield, Clock, Film, History, Check } from "lucide-react";
+import { LogOut, User, Mail, Shield, Clock, Film, History, Check, Trash2 } from "lucide-react";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import api from "../services/api";
 import { API } from "../constants";
@@ -13,16 +13,37 @@ export default function Profile() {
   const [history, setHistory] = useState([]);
   const [histLoading, setHistLoading] = useState(true);
 
+  const loadHistory = async () => {
+    try {
+      const res = await api.get(API.HISTORY_GET);
+      setHistory(res.data.data || []);
+    } catch (_) {}
+    finally { setHistLoading(false); }
+  };
+
   useEffect(() => {
-    async function loadHistory() {
-      try {
-        const res = await api.get(API.HISTORY_GET);
-        setHistory(res.data.data || []);
-      } catch (_) {}
-      finally { setHistLoading(false); }
-    }
     loadHistory();
   }, []);
+
+  const handleDeleteHistoryItem = async (videoId) => {
+    try {
+      await api.delete(API.HISTORY_REMOVE(videoId));
+      setHistory(prev => prev.filter(item => item.video?._id !== videoId));
+    } catch (err) {
+      console.error("Failed to delete history item:", err);
+    }
+  };
+
+  const handleClearAllHistory = async () => {
+    if (window.confirm("Are you sure you want to clear your entire watch history?")) {
+      try {
+        await api.delete(API.HISTORY_CLEAR || "/api/watchistory");
+        setHistory([]);
+      } catch (err) {
+        console.error("Failed to clear watch history:", err);
+      }
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -88,7 +109,17 @@ export default function Profile() {
 
           {/* Watch history */}
           <div className="lg:col-span-2">
-            <h2 className="text-sm font-semibold text-prime-muted uppercase tracking-wider mb-3">Watch History</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-prime-muted uppercase tracking-wider">Watch History</h2>
+              {history.length > 0 && (
+                <button
+                  onClick={handleClearAllHistory}
+                  className="text-xs font-semibold text-red-400 hover:text-red-300 transition-colors"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
 
             <div className="bg-prime-surface border border-prime-border rounded overflow-hidden">
               {histLoading ? (
@@ -98,8 +129,8 @@ export default function Profile() {
               ) : history.length === 0 ? (
                 <div className="p-8 text-center">
                   <History size={28} className="text-prime-muted mx-auto mb-3"/>
-                  <p className="text-prime-muted text-sm">Koi watch history nahi abhi.</p>
-                  <p className="text-prime-subtle text-xs mt-1">Videos dekhna shuru karein!</p>
+                  <p className="text-prime-muted text-sm">No watch history found.</p>
+                  <p className="text-prime-subtle text-xs mt-1">Start watching videos!</p>
                 </div>
               ) : (
                 <div className="divide-y divide-prime-border">
@@ -129,9 +160,18 @@ export default function Profile() {
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 text-prime-subtle text-xs flex-shrink-0">
-                          <Clock size={11}/>
-                          <span>{new Date(item.lastWatchedAt).toLocaleDateString()}</span>
+                        <div className="flex items-center gap-3 text-prime-subtle text-xs flex-shrink-0">
+                          <div className="flex items-center gap-1">
+                            <Clock size={11}/>
+                            <span>{new Date(item.lastWatchedAt).toLocaleDateString()}</span>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteHistoryItem(v._id)}
+                            className="text-prime-subtle hover:text-red-400 p-1.5 rounded hover:bg-prime-elevated transition-colors"
+                            title="Delete item"
+                          >
+                            <Trash2 size={14}/>
+                          </button>
                         </div>
                       </div>
                     );

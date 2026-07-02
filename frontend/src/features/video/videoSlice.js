@@ -10,7 +10,7 @@ export const fetchVideos = createAsyncThunk("video/fetchAll", async (params = {}
   } catch (err) {
     // 400 "Not Videos Found" — treat as empty, not error
     if (err.response?.status === 400) return { data: [], totalVideos: 0 };
-    return rejectWithValue(err.response?.data?.message || "Videos load nahi hue");
+    return rejectWithValue(err.response?.data?.message || "Failed to load videos");
   }
 });
 
@@ -20,7 +20,7 @@ export const fetchVideoById = createAsyncThunk("video/fetchById", async (id, { r
     const res = await api.get(API.VIDEO_DETAIL(id));
     return res.data.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.message || "Video nahi mili");
+    return rejectWithValue(err.response?.data?.message || "Video not found");
   }
 });
 
@@ -30,7 +30,7 @@ export const deleteVideo = createAsyncThunk("video/delete", async (id, { rejectW
     await api.delete(API.VIDEO_DELETE(id));
     return id;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.message || "Delete fail hua");
+    return rejectWithValue(err.response?.data?.message || "Failed to delete video");
   }
 });
 

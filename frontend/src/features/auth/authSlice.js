@@ -8,7 +8,7 @@ export const loginUser = createAsyncThunk("auth/login", async (credentials, { re
     const res = await api.post(API.LOGIN, credentials);
     return res.data; // { message, user, accessToken }
   } catch (err) {
-    return rejectWithValue(err.response?.data?.message || "Login fail ho gaya");
+    return rejectWithValue(err.response?.data?.message || "Login failed");
   }
 });
 
@@ -18,7 +18,7 @@ export const registerUser = createAsyncThunk("auth/register", async (data, { rej
     const res = await api.post(API.REGISTER, data);
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.message || "Registration fail ho gayi");
+    return rejectWithValue(err.response?.data?.message || "Registration failed");
   }
 });
 

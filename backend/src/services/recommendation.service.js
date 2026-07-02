@@ -35,7 +35,7 @@ IMPORTANT: Each videoId must appear only ONCE in your response — no duplicates
 If fewer than 6 unique videos are available, recommend fewer — do not repeat any video.
 
 Respond ONLY with valid JSON, no markdown, no extra text, in this exact format:
-[{"videoId": "...", "reason": "short reason in Hinglish, under 15 words"}]`;
+[{"videoId": "...", "reason": "short reason in english, under 15 words"}]`;
 
   const result = await model.generateContent(prompt);
   const text = result.response.text();

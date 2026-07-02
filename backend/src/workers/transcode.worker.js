@@ -29,7 +29,7 @@ function transcodeToHLS(inputPath, outputDir, height) {
   });
 }
 
-// Folder ke andar saari files ka naam list karo (upload karne ke liye)
+// List all file names inside a folder (for upload)
 async function listFiles(dir) {
   const files = await fs.readdir(dir);
   return files.map(f => path.join(dir, f));
@@ -46,23 +46,23 @@ const worker = new Worker("transcode", async (job) => {
   try {
     await videoModel.findByIdAndUpdate(videoId, { status: "transcoding" });
 
-    // Folders banao
+    // Create folders
     await fs.mkdir(dir480, { recursive: true });
     await fs.mkdir(dir720, { recursive: true });
 
-    // Step 1: Raw video download karo
+    // Step 1: Download raw video
     console.log(`[${videoId}] Downloading...`);
     await downloadFile(rawKey, inputPath);
 
-    // Step 2: 480p HLS banao
+    // Step 2: Create 480p HLS
     console.log(`[${videoId}] Transcoding 480p HLS...`);
     await transcodeToHLS(inputPath, dir480, 480);
 
-    // Step 3: 720p HLS banao
+    // Step 3: Create 720p HLS
     console.log(`[${videoId}] Transcoding 720p HLS...`);
     await transcodeToHLS(inputPath, dir720, 720);
 
-    // Step 4: Master playlist banao
+    // Step 4: Create master playlist
     const masterContent = `#EXTM3U
 #EXT-X-STREAM-INF:BANDWIDTH=1280000,RESOLUTION=842x480
 480p/playlist.m3u8
@@ -72,7 +72,7 @@ const worker = new Worker("transcode", async (job) => {
     const masterPath = path.join(tmpBase, "master.m3u8");
     await fs.writeFile(masterPath, masterContent);
 
-    // Step 5: Saari files B2 upload karo
+    // Step 5: Upload all files to B2
     console.log(`[${videoId}] Uploading HLS files to B2...`);
 
     const files480 = await listFiles(dir480);
@@ -97,7 +97,7 @@ const worker = new Worker("transcode", async (job) => {
       masterPlaylistKey: `processed/${videoId}/master.m3u8`,
     });
 
-    // Cache invalidate karo — video ab ready hai, home pe dikhni chahiye
+    // Invalidate cache — video is now ready, should be visible on home
   await redisConnection.del("videos:all:page1:limit50");
 
     console.log(`[${videoId}] HLS transcoding complete`);
@@ -108,7 +108,7 @@ const worker = new Worker("transcode", async (job) => {
     throw err;
 
   } finally {
-    // Poora tmp/<videoId> folder delete karo (recursive)
+    // Delete entire tmp/<videoId> folder (recursive)
     await fs.rm(tmpBase, { recursive: true, force: true });
     console.log(`[${videoId}] Cleanup done`);
   }
@@ -116,9 +116,9 @@ const worker = new Worker("transcode", async (job) => {
 }, {
   connection: redisConnection,
   concurrency: 1,
-  lockDuration: 600000,       // 10 minute (default 30 second hota hai)
-  stalledInterval: 60000,     // har 1 minute check kare (default 30 sec)
-  maxStalledCount: 1,         // kitni baar retry kare stalled hone par
+  lockDuration: 600000,       // 10 minutes (default is 30 seconds)
+  stalledInterval: 60000,     // check every 1 minute (default 30 sec)
+  maxStalledCount: 1,         // how many times to retry if stalled
 });
 
 async function uploadDirectory(localDir, b2KeyPrefix) {
@@ -126,7 +126,7 @@ async function uploadDirectory(localDir, b2KeyPrefix) {
 
   for (const file of files) {
     if (file.isDirectory()) {
-      // recursively andar ke folder (480p, 720p) bhi upload karo
+      // recursively upload subfolders (480p, 720p)
       await uploadDirectory(
         path.join(localDir, file.name),
         `${b2KeyPrefix}/${file.name}`
@@ -136,7 +136,7 @@ async function uploadDirectory(localDir, b2KeyPrefix) {
       const b2Key = `${b2KeyPrefix}/${file.name}`;
       const contentType = file.name.endsWith(".m3u8")
         ? "application/vnd.apple.mpegurl"
-        : "video/mp2t"; // .ts segments ka content type
+        : "video/mp2t"; // content type for .ts segments
 
       await uploadFile(b2Key, localFilePath, contentType);
     }

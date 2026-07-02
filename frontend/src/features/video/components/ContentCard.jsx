@@ -10,69 +10,100 @@ function getThumbnail(video) {
   return "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&fit=crop";
 }
 
-export default function ContentCard({ video, size = "md" }) {
+export default function ContentCard({ video, size = "md", isGrid = false }) {
   const [hovered, setHovered] = useState(false);
-  const widths = { sm:"w-40 sm:w-44", md:"w-48 sm:w-56", lg:"w-56 sm:w-64" };
+  
+  // Amazon Prime Style Bada Size (Agar horizontal scroll list me use karein tab)
+  const widths = { 
+    sm: "w-52 sm:w-56", 
+    md: "w-64 sm:w-72 lg:w-80", // Increased card size
+    lg: "w-72 sm:w-80 lg:w-96" 
+  };
+
   const watchUrl = video.source === "youtube"
     ? `/watch-yt/${video._id}`
     : `/watch/${video._id}`;
 
   return (
-    <div className={`${widths[size]} flex-shrink-0 group relative`}
-      onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}>
+    <div 
+      className={`${isGrid ? "w-full" : widths[size]} flex-shrink-0 group relative`}
+      onMouseEnter={() => setHovered(true)} 
+      onMouseLeave={() => setHovered(false)}
+    >
       <Link to={`/title/${video._id}`}>
-        <div className="relative rounded overflow-hidden aspect-video bg-prime-elevated cursor-pointer">
-          <img src={getThumbnail(video)} alt={video.title} loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={e=>{e.target.src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600";}}/>
+        {/* Amazon Prime uses rounded-md corners for premium look */}
+        <div className="relative rounded-md overflow-hidden aspect-video bg-prime-elevated cursor-pointer shadow-md group-hover:shadow-xl transition-shadow duration-300">
+          <img 
+            src={getThumbnail(video)} 
+            alt={video.title} 
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={e => { e.target.src = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600"; }}
+          />
 
           {video.source === "youtube" && (
-            <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-black/70 rounded px-1.5 py-0.5">
-              <Youtube size={10} className="text-red-500"/>
-              <span className="text-[9px] text-white font-medium">YouTube</span>
+            <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 rounded px-2 py-0.5 z-10">
+              <Youtube size={12} className="text-red-500" />
+              <span className="text-[10px] text-white font-medium">YouTube</span>
             </div>
           )}
 
           {video.status && video.status !== "ready" && video.status !== "published" && (
-            <div className="absolute top-1.5 right-1.5 bg-yellow-500/90 text-black text-[9px] font-bold px-1.5 py-0.5 rounded capitalize">
+            <div className="absolute top-2 right-2 bg-yellow-500/90 text-black text-[10px] font-bold px-2 py-0.5 rounded capitalize z-10">
               {video.status}
             </div>
           )}
 
           <AnimatePresence>
             {hovered && (
-              <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.2}}
-                className="absolute inset-0 flex flex-col justify-end p-2.5"
-                style={{background:"linear-gradient(to top,rgba(15,23,30,0.95) 0%,rgba(15,23,30,0.5) 50%,transparent)"}}>
-                <div className="flex items-center gap-1.5 mb-2">
-                  <Link to={watchUrl} onClick={e=>e.stopPropagation()}
-                    className="w-7 h-7 flex items-center justify-center rounded-full text-prime-bg"
-                    style={{background:"white"}} aria-label="Play">
-                    <Play size={12} fill="currentColor"/>
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 flex flex-col justify-end p-3"
+                style={{ background: "linear-gradient(to top, rgba(15,23,30,0.98) 0%, rgba(15,23,30,0.7) 60%, transparent 100%)" }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Link 
+                    to={watchUrl} 
+                    onClick={e => e.stopPropagation()}
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-prime-bg hover:scale-110 transition-transform"
+                    style={{ background: "white" }} 
+                    aria-label="Play"
+                  >
+                    <Play size={14} fill="currentColor" />
                   </Link>
-                  <button className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white hover:border-white transition-colors" aria-label="Add">
-                    <Plus size={13}/>
+                  <button className="w-8 h-8 flex items-center justify-center rounded-full border border-white/40 text-white hover:border-white hover:bg-white/10 transition-colors" aria-label="Add">
+                    <Plus size={15} />
                   </button>
-                  <button className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white hover:border-white transition-colors" aria-label="Like">
-                    <ThumbsUp size={12}/>
+                  <button className="w-8 h-8 flex items-center justify-center rounded-full border border-white/40 text-white hover:border-white hover:bg-white/10 transition-colors" aria-label="Like">
+                    <ThumbsUp size={14} />
                   </button>
-                  <Link to={`/title/${video._id}`} onClick={e=>e.stopPropagation()}
-                    className="ml-auto w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white hover:border-white transition-colors" aria-label="More info">
-                    <Info size={12}/>
+                  <Link 
+                    to={`/title/${video._id}`} 
+                    onClick={e => e.stopPropagation()}
+                    className="ml-auto w-8 h-8 flex items-center justify-center rounded-full border border-white/40 text-white hover:border-white hover:bg-white/10 transition-colors" 
+                    aria-label="More info"
+                  >
+                    <Info size={14} />
                   </Link>
                 </div>
-                <p className="text-white text-xs font-semibold truncate">{video.title}</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-prime-accent text-[10px] font-semibold uppercase">{video.type}</span>
-                  {video.genres?.[0] && <span className="text-prime-muted text-[10px]">· {video.genres[0]}</span>}
-                  {video.year && <span className="text-prime-muted text-[10px]">· {video.year}</span>}
+                
+                <p className="text-white text-sm font-bold truncate">{video.title}</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-prime-accent text-[11px] font-semibold uppercase">{video.type}</span>
+                  {video.genres?.[0] && <span className="text-prime-muted text-[11px]">· {video.genres[0]}</span>}
+                  {video.year && <span className="text-prime-muted text-[11px]">· {video.year}</span>}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </Link>
-      <p className="mt-1.5 text-xs text-prime-muted truncate group-hover:text-white transition-colors px-0.5">
+      
+      {/* Title niche tabhi dikhega jab hover na ho prime content styles ki tarah */}
+      <p className="mt-2 text-sm font-medium text-prime-muted truncate group-hover:text-white transition-colors px-0.5">
         {video.title}
       </p>
     </div>

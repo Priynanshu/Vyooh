@@ -7,7 +7,7 @@ export async function saveWatchHistory(req, res, next) {
     const { videoId, progress, watchedDuration } = req.body;
 
     if (!videoId || progress === undefined || watchedDuration === undefined) {
-      return next(new AppError("videoId, progress, watchedDuration required hain", 400));
+      return next(new AppError("videoId, progress, and watchedDuration are required", 400));
     }
 
     const updateData = {
@@ -16,7 +16,7 @@ export async function saveWatchHistory(req, res, next) {
       lastWatchedAt: new Date(),
     };
 
-    // Completed sirf true karo, kabhi false mat karo
+    // Only set completed to true, never to false
     if (progress >= 80) updateData.completed = true;
 
     const watchHistory = await watchHistoryModel.findOneAndUpdate(
@@ -30,7 +30,7 @@ export async function saveWatchHistory(req, res, next) {
       data: watchHistory,
     });
   } catch (err) {
-    return next(new AppError("Watch history save nahi hui: " + err.message, 500));
+    return next(new AppError("Failed to save watch history: " + err.message, 500));
   }
 }
 
@@ -49,7 +49,7 @@ export async function getWatchHistory(req, res, next) {
       data: history,
     });
   } catch (err) {
-    return next(new AppError("Watch history fetch nahi hui: " + err.message, 500));
+    return next(new AppError("Failed to fetch watch history: " + err.message, 500));
   }
 }
 
@@ -61,7 +61,7 @@ export async function getContinueWatching(req, res, next) {
       .find({
         user: userId,
         completed: false,
-        progress: { $gt: 0 }, // kuch to dekha ho
+        progress: { $gt: 0 }, // only if they have watched something
       })
       .populate("video", "title thumbnail type genres year status masterPlaylistKey")
       .sort({ lastWatchedAt: -1 })
@@ -73,7 +73,7 @@ export async function getContinueWatching(req, res, next) {
       data: history,
     });
   } catch (err) {
-    return next(new AppError("Continue watching fetch nahi hui: " + err.message, 500));
+    return next(new AppError("Failed to fetch continue watching: " + err.message, 500));
   }
 }
 
@@ -84,9 +84,9 @@ export async function removeFromHistory(req, res, next) {
 
     await watchHistoryModel.findOneAndDelete({ user: userId, video: videoId });
 
-    return res.status(200).json({ message: "History se remove kar diya" });
+    return res.status(200).json({ message: "Removed from history successfully" });
   } catch (err) {
-    return next(new AppError("History remove nahi hui: " + err.message, 500));
+    return next(new AppError("Failed to remove from history: " + err.message, 500));
   }
 }
 
@@ -96,8 +96,8 @@ export async function clearAllHistory(req, res, next) {
 
     await watchHistoryModel.deleteMany({ user: userId });
 
-    return res.status(200).json({ message: "Poori history clear ho gayi" });
+    return res.status(200).json({ message: "Watch history cleared successfully" });
   } catch (err) {
-    return next(new AppError("History clear nahi hui: " + err.message, 500));
+    return next(new AppError("Failed to clear watch history: " + err.message, 500));
   }
 }

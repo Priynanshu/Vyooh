@@ -8,7 +8,7 @@ export async function getStreamUrl(req, res, next) {
         const { id } = req.params;
         const video = await videoModel.findById(id);
         if (!video) return next(new AppError("Video not found", 404));
-        if (video.status !== "ready") return next(new AppError("Video abhi ready nahi", 400));
+        if (video.status !== "ready") return next(new AppError("Video is not ready yet", 400));
 
         const masterUrl = `${req.protocol}://${req.get("host")}/api/video/${id}/hls/master.m3u8`;
         return res.status(200).json({ playbackUrl: masterUrl });
@@ -33,13 +33,13 @@ export async function streamHLSFile(req, res, next) {
 
         const response = await getFileStream(b2Key);
 
-        // Content-Type sahi set karo, warna browser file ko samajh nahi payega
+        // Set the Content-Type correctly, otherwise the browser will not understand the file
         const contentType = filePath.endsWith(".m3u8")
             ? "application/vnd.apple.mpegurl"
             : "video/mp2t";
 
         res.setHeader("Content-Type", contentType);
-        response.Body.pipe(res); // seedha stream forward kar do, RAM mein store nahi karna
+        response.Body.pipe(res); // Forward the stream directly, do not store in RAM
 
     } catch (err) {
         return next(new AppError("something went wrong in streamHLSFile: " + err, 500));
@@ -62,7 +62,7 @@ export async function getAllVideos(req, res, next) {
   try {
     const { type, genre, search, page = 1, limit = 50 } = req.query;
 
-    // Cache sirf tab use karo jab koi filter na ho (home page default request)
+    // Use cache only when there is no filter (home page default request)
     const isDefaultRequest = !type && !genre && !search;
     const cacheKey = `videos:all:page${page}:limit${limit}`;
 
@@ -87,14 +87,14 @@ export async function getAllVideos(req, res, next) {
 
     const responseData = { data: videos, totalVideos: videos.length };
 
-    // Sirf default request cache karo — 10 minute
+    // Only cache default request — 10 minutes
     if (isDefaultRequest) {
       await redisConnection.set(cacheKey, JSON.stringify(responseData), "EX", 600);
     }
 
     return res.status(200).json(responseData);
   } catch (err) {
-    return next(new AppError("Videos load nahi hue: " + err.message, 500));
+    return next(new AppError("Failed to load videos: " + err.message, 500));
   }
 }
 

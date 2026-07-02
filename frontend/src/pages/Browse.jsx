@@ -64,16 +64,23 @@ export default function Browse() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-          {loading
-            ? Array.from({length:12}).map((_,i) => <SkeletonCard key={i}/>)
-            : filtered.map((video, i) => (
-                <motion.div key={video._id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
-                  transition={{duration:0.3, delay:Math.min(i*0.03,0.3)}} className="w-full">
-                  <ContentCard video={video}/>
-                </motion.div>
-              ))}
-        </div>
+{/* Grid */}
+<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 sm:gap-6">
+  {loading
+    ? Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)
+    : filtered.map((video, i) => (
+        <motion.div 
+          key={video._id} 
+          initial={{ opacity: 0, y: 8 }} 
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: Math.min(i * 0.03, 0.3) }} 
+          className="w-full"
+        >
+          {/* YAHAN PAR isGrid={true} PASS KARNA ZAROORI HAI */}
+          <ContentCard video={video} isGrid={true} />
+        </motion.div>
+      ))}
+</div>
 
         {!loading && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">

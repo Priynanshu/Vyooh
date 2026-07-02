@@ -152,7 +152,7 @@ export default function AdminContent() {
 
         {!loading && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-prime-muted text-sm">Koi video nahi mili.</p>
+            <p className="text-prime-muted text-sm">No videos found.</p>
           </div>
         )}
       </div>
@@ -185,7 +185,7 @@ export default function AdminContent() {
 
               <p className="text-prime-muted text-sm mb-5 pl-6">
                 <span className="text-prime-text font-medium">"{deleteTarget.title}"</span>{" "}
-                permanently delete ho jayegi — B2 storage se bhi. Yeh undo nahi ho sakta.
+                will be permanently deleted, including from B2 storage. This action cannot be undone.
               </p>
 
               <div className="flex gap-3 pl-6">

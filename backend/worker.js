@@ -1,10 +1,10 @@
 import "dotenv/config";
 import connectDB from "./src/config/database.js";
-import "./src/workers/transcode.worker.js";  // worker start karna
+import "./src/workers/transcode.worker.js";  // Start worker
 
 async function start() {
-  await connectDB();  // pehle DB connect ho jaaye
-  console.log("Transcode worker chal raha hai...");
+  await connectDB();  // Ensure DB connects first
+  console.log("Transcode worker is running...");
 }
 
 start();

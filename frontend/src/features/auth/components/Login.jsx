@@ -86,10 +86,6 @@ export default function Login() {
               </p>
             </div>
 
-            <div className="mt-4 p-3 bg-prime-elevated rounded text-xs text-prime-muted">
-              <p className="font-semibold text-prime-text mb-1">Test credentials:</p>
-              <p>Admin: admin@vyooh.com / admin123</p>
-            </div>
           </div>
         </motion.div>
       </div>
