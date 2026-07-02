@@ -76,14 +76,14 @@ export const loginUser = async (req, res, next) => {
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            // sameSite: "lax",
+            sameSite: "none",
             maxAge: 10 * 60 * 1000 // 15 minute
         });
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,     // Prevents client-side scripts from reading the cookie (blocks XSS)
             secure: process.env.NODE_ENV === "production",       // Ensures cookie is only sent over HTTPS (use true in production)
-            // sameSite: "strict", // Protects against Cross-Site Request Forgery (CSRF) attacks
+            sameSite: "none", // Protects against Cross-Site Request Forgery (CSRF) attacks
             maxAge: 24 * 60 * 60 * 1000 // Cookie expiry time in milliseconds (e.g., 1 day)
         });
 
@@ -127,7 +127,7 @@ export const logoutUser = async (req, res, next) => {
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            // sameSite: "lax"
+            sameSite: "none"
         });
 
         return res.status(200).json({
@@ -161,7 +161,7 @@ export const refreshAccessToken = async (req, res, next) => {
         res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            // sameSite: "none",
+            sameSite: "none",
             maxAge: 10 * 60 * 1000 // 15 minute
         });
 
