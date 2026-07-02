@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx nodemon server.js",
-    "worker": "node worker.js"
+    "worker": "node worker.js",
+    "render:start": "concurrently \"npm run start\" \"npm run worker\""
   },
   "keywords": [],
   "author": "",
@@ -21,6 +22,7 @@
     "bullmq": "^5.78.1",
     "cheerio": "^1.2.0",
     "compression": "^1.8.1",
+    "concurrently": "^10.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
