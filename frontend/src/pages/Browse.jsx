@@ -84,7 +84,7 @@ export default function Browse() {
 
         {!loading && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="text-prime-muted text-sm">Is filter mein koi content nahi mila.</p>
+            <p className="text-prime-muted text-sm">Currently no content available in this filter.</p>
           </div>
         )}
       </motion.div>

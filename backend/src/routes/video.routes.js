@@ -7,7 +7,7 @@ const router = express.Router();
 router.get("/:id/stream", identifyUser, getStreamUrl);
 router.get("/:id/hls/*splat", identifyUser, streamHLSFile);
 router.get("/:id/status", identifyUser, getVideoStatus);
-router.get("/videos", identifyUser, getAllVideos)
+router.get("/videos", getAllVideos)
 router.get("/:id", identifyUser, getVideoDetails)
 router.patch("/edit/:id", identifyUser, adminCheck, editVideoDetails)
 router.delete("/delete/:id", identifyUser, adminCheck, deleteVideo)
