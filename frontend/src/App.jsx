@@ -59,7 +59,7 @@ export default function App() {
         <Route path="*" element={
           <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
             <p className="text-6xl font-bold text-prime-accent mb-4">404</p>
-            <p className="text-prime-muted mb-6">Yeh page exist nahi karta.</p>
+            <p className="text-prime-muted mb-6">This Page is not Exist.</p>
             <a href="/" className="px-5 py-2.5 rounded font-semibold text-white text-sm" style={{background:"#00A8E1"}}>
               Go Home
             </a>
